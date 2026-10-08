@@ -1,10 +1,11 @@
 <?php
- 
+
 namespace App\Http\Controllers\Api;
- 
+
 use App\Models\User;
 use Illuminate\Http\Request;
- 
+use Illuminate\Validation\Rule;
+
 class UserController 
 {
     // GET /api/users
@@ -12,7 +13,7 @@ class UserController
     {
         return response()->json(User::latest()->get(), 200);
     }
- 
+
     // POST /api/users
     public function store(Request $request)
     {
@@ -23,9 +24,46 @@ class UserController
             'rol'         => 'nullable|string|max:255',
             'password'    => 'required|string|min:8|confirmed',
         ]);
- 
+
         $user = User::create($data);
- 
+
         return response()->json($user, 201);
+    }
+
+    // GET /api/users/{user}
+    public function show(User $user)
+    {
+        return response()->json($user, 200);
+    }
+
+    // PUT/PATCH /api/users/{user}
+    public function update(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'name'     => 'sometimes|required|string|max:255',
+            'email'    => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
+            'celular'  => ['nullable', 'digits:10', Rule::unique('users', 'celular')->ignore($user->id)],
+            'rol'      => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // Remueve la contraseña si no se envió una nueva
+        if (array_key_exists('password', $data) && empty($data['password'])) {
+            unset($data['password']);
+        }
+
+        $user->update($data);
+
+        return response()->json($user, 200);
+    }
+
+    // DELETE /api/users/{user}
+    public function destroy(User $user)
+    {
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Usuario eliminado correctamente'
+        ], 200);
     }
 }
