@@ -40,11 +40,11 @@ class UserController
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'name'     => 'sometimes|required|string|max:255',
-            'email'    => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
-            'celular'  => ['nullable', 'digits:10', Rule::unique('users', 'celular')->ignore($user->id)],
-            'rol'      => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:8|confirmed',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users',
+            'celular'     => ['nullable', 'digits:10', 'unique:users,celular'],
+            'rol'         => 'nullable|string|max:255',
+            'password'    => 'required|string|min:8|confirmed',
         ]);
 
         // Remueve la contraseña si no se envió una nueva
